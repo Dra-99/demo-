@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <div class="container">
+
+    </div>
+
+    <script>
+        // 什么是函数科里化？函数科里化可以用来固定函数的固定参数
+        function fun(x, y, z) {
+            return (x + y) * z
+        }
+        // 使用函数科里化
+        // 如果我们将函数所需参数都传给执行的函数，那么我们应该得到的是执行结果，反之得到一个函数引用可以继续函数执行
+        // 1 const result = currly(fun, x)
+        // 2 const fun = currly(fun)
+
+        // 科里化函数
+        function currly(fun) {
+            // 得到剩余参数
+            const args = Array.prototype.slice.call(arguments, 1);
+            const that = this;
+            return function() {
+                const curArgs = Array.from(arguments);
+                const totalArgs = args.concat(curArgs)
+                // 函数.length可以得到的是函数所需参数的数量
+                if (totalArgs.length >= fun.length) {
+                    // 剩余参数大于等于函数所需参数，那么说明函数已经全部传递该执行函数，则执行该函数
+                    return fun.apply(null, totalArgs);
+                } else {
+                    // 返回一个函数，继续接受剩余参数
+                    totalArgs.unshift(fun);
+                    return that.currly.apply(that, totalArgs);
+                }
+            }
+        }
+
+        console.log(currly(fun, 2)(4)(3))
+
+        // 应用场景
+        const addEle = (container, eleName, props, style, content) => {
+             const ele = document.createElement(eleName);
+             for (const prop in props) {
+                ele[prop] = props[prop]
+             }
+             for (const prop in style) {
+                console.log(prop)
+                ele.style[prop] = style[prop]
+             }
+             if (content) {
+                ele.innerText = content
+             }
+             container.appendChild(ele)
+        }
+        // addEle(document.querySelector('.container'), 'div', {}, {
+        //     width: '100%',
+        //     background: '#008c8c'
+        // }, '哈哈哈')
+        // 使用科里化固定参数，只改变元素内容
+        const currlyAddEle = currly(addEle, document.querySelector('.container'), 'div', {}, {
+            height: '200px',
+            background: '#008c8c',
+            color: '#ccc',
+            marginTop: '20px'
+        })
+        currlyAddEle('这是一个')
+        currlyAddEle('这是一个')
+        currlyAddEle('这是一个')
+        currlyAddEle('这是一个')
+        currlyAddEle('这是一个')
+        currlyAddEle('这是一个')
+        currlyAddEle('这是一个')
+    </script>
+</body>
+</html>
